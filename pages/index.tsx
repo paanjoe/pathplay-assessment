@@ -18,7 +18,7 @@ function Home({fakeText}) {
 
   // We want to get more post if the user scroll down by passing params of the post length...
   const getMorePosts = async() => {
-    const res = await fetch(`https://fakestoreapi.com/products?_start=${post.length}&_limit=10`);
+    const res = await fetch(`https://fakestoreapi.com/products?_start=${post.length}&_limit=4`);
     const newPosts = await res.json();
     setPosts(post => [...post, ...newPosts]);
   }
@@ -101,7 +101,7 @@ function Home({fakeText}) {
 
 // Load post
 export async function getServerSideProps() {
-  const resFakeText = await fetch(`https://fakestoreapi.com/products?limit=10`);
+  const resFakeText = await fetch(`https://fakestoreapi.com/products?limit=4`);
   const fakeText = await resFakeText.json();
   return {
     props: { fakeText }
