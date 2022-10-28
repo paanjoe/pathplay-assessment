@@ -2,10 +2,6 @@
 import Image from "next/image";
 import { Player } from '@lottiefiles/react-lottie-player';
 
-const fetchImage = async () => {
-  
-}
-
 function Postlists(fakeText) {
   return (
     <div className="flex flex-col items-center pt-10 pb-2">

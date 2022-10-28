@@ -1,49 +1,57 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {useEffect, useState } from "react";
 import NavBar from "./component/navbar";
 import Postlists from "./postlists/postlists";
 import InfiniteScroll from 'react-infinite-scroll-component';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from 'react-query'
-const queryClient = new QueryClient();
+import React from "react";
 
-
-// Main
 function Home({fakeText}) {
+  // State to show the data is loading or not..
   const [loading, finishLoad] = useState(false);
-  
 
+  // We want to set the postlist from the fetch getServerSideProps Initially...
   const [post, setPosts] = useState(fakeText);
-  
+
+  // We want to set the current scroll state as on the top of the page..
+  const [ scrollPos, setScrollPos ] = useState(0);
+
+  // We want to get more post if the user scroll down by passing params of the post length...
   const getMorePosts = async() => {
     const res = await fetch(`https://fakestoreapi.com/products?_start=${post.length}&_limit=10`);
     const newPosts = await res.json();
     setPosts(post => [...post, ...newPosts]);
   }
 
+  // We want to set the y axis of the current scroll...
+  const handleScrollPos = () => {
+    setScrollPos(window.scrollY);
+  };
+
+  // Change the state to finish load the post... and reset the scroll
+  useEffect(() => { 
+    finishLoad(true); 
+
+    // Reset to 0
+    window.scrollTo(0, scrollPos);
+
+    
+  },[scrollPos])
+
+  // add the scroll to event 
   useEffect(() => {
-    if (post.length) {
-      const scrollPosition = sessionStorage.getItem('scrollPosition');
-      if(scrollPosition) {
-        window.scrollTo(0, parseInt(scrollPosition, 10));
-        sessionStorage.removeItem('scrollPosition');
-      }
-    }
-    finishLoad(true);
-  }, [])
+    window.addEventListener('scroll', handleScrollPos);
+    return () => {
+        window.removeEventListener('scroll', handleScrollPos);
+    };
+  }, []);
 
   if(!loading) {
-    return null;
+    return <div className="text-center">Somethign is cooking...</div>;
   }
 
   if (typeof window === 'undefined') {
-    return <></>;
+    return (<div>Error - Couldnt get page data</div>);
   } else {
     return (
       <div>
@@ -53,6 +61,7 @@ function Home({fakeText}) {
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <NavBar></NavBar>
+        {/* Use infinite scroll hook */}
         <InfiniteScroll
         dataLength={post.length}
         next={getMorePosts}
@@ -66,9 +75,12 @@ function Home({fakeText}) {
           post.map((element) => {
             return (
               <div key={element.id}>
-                <Link onClick={() =>
-                  sessionStorage.setItem('scrollPosition', typeof window.pageYOffset)
-                } scroll={false} href={`/postlists/${element.id}`}>
+                
+                <Link 
+                  as={`/postlists/${element.id}`}
+                  scroll={false}
+                  href="/postlists/[id]"
+                >
                   <Postlists 
                     id={element.id}
                     userProfileId={element.userProfileId}
@@ -97,5 +109,3 @@ export async function getServerSideProps() {
 }
 
 export default Home;
-
-
